@@ -15,6 +15,7 @@ use KHQR\Helpers\KHQRData;
 use KHQR\Models\IndividualInfo;
 use Resend\Laravel\Facades\Resend;
 
+
 use Illuminate\Support\Facades\Http;
 
 

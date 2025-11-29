@@ -90,3 +90,4 @@ use App\Http\Controllers\TelegramController;
 Route::get('/test-telegram', [TelegramController::class, 'sendTest']);
 
 Route::get('/test', [TestController::class, 'test']);
+Route::get('/test-o', [TestController::class, 'otherTest']);
