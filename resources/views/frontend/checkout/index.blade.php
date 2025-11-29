@@ -55,84 +55,160 @@
 </section>
 
 <!-- QR Modal -->
-<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+<!-- QR Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center p-4">
-            <h4 class="mb-3">Scan QR to Pay</h4>
-            <img id="qrImage" src="" alt="QR Code" class="img-fluid mb-2" />
-            <p id="qrAmount" class="mb-3"></p>
-            <p id="paymentStatus" class="text-success fw-bold"></p>
+        <div class="modal-content p-4 text-center border-0 shadow-sm rounded-4">
+
+            <h4 class="mb-4 fw-bold text-success">💳 Scan QR to Pay</h4>
+
+            <div class="mb-3">
+                <img id="qrImage" src="" class="img-fluid rounded-3 border p-2" style="max-width: 220px;">
+            </div>
+
+            <p id="qrAmount" class="h5 fw-semibold mb-1">Amount: $0.00</p>
+            <p id="paymentStatus" class="fw-bold text-primary mb-3">Waiting for payment...</p>
+
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <button id="cancelPaymentBtn" class="btn btn-outline-secondary rounded-pill px-4">
+                    Cancel
+                </button>
+                <button id="confirmPaymentBtn" class="btn btn-success rounded-pill px-4">
+                    Confirm
+                </button>
+            </div>
+
+            <small class="text-muted d-block mt-3">
+                Please scan the QR code using your banking app to complete the payment.
+            </small>
+
         </div>
     </div>
 </div>
+
 @endsection
 
 @section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+let pollingInterval = null;
+let currentMd5 = null;
+
+/* --------------------------
+   AUTO POLLING CHECK
+--------------------------- */
+async function autoCheckPayment() {
+    const response = await fetch("{{ route('checkout.checkPayment') }}", {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            md5: currentMd5,
+            manualPay: false
+        })
+    });
+
+    return response.json();
+}
+
+/* --------------------------
+   MANUAL CONFIRM PAYMENT CLICK
+--------------------------- */
+async function manualCheckPayment() {
+    const response = await fetch("{{ route('checkout.checkPayment') }}", {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            md5: currentMd5,
+            manualPay: true
+        })
+    });
+
+    return response.json();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
     const payBtn = document.getElementById('payWithQrBtn');
     const qrImg = document.getElementById('qrImage');
     const qrAmount = document.getElementById('qrAmount');
     const paymentStatus = document.getElementById('paymentStatus');
-    let pollingInterval;
+    const cancelBtn = document.getElementById('cancelPaymentBtn');
+    const confirmBtn = document.getElementById('confirmPaymentBtn');
 
-    payBtn.addEventListener('click', async function() {
-        paymentStatus.textContent = '';
-        try {
-            const response = await fetch("{{ route('checkout.generateQr') }}", {
-                method: 'Get',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            });
+    payBtn.addEventListener('click', async () => {
 
-            const data = await response.json();
+        paymentStatus.textContent = "";
 
-            console.log(data);
-            if(!data.qrUrl) {
-                alert(data.error || 'Failed to generate QR code.');
-                return;
+        const resp = await fetch("{{ route('checkout.generateQr') }}");
+        const data = await resp.json();
+
+        console.log(data);
+
+        if (!data.qrUrl) {
+            alert(data.error || "Failed to generate QR code");
+            return;
+        }
+
+        currentMd5 = data.md5;
+        qrImg.src = data.qrUrl;
+        qrAmount.textContent = "Amount: $" + parseFloat(data.amount).toFixed(2);
+        paymentStatus.textContent = "Waiting for payment...";
+
+        const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+        modal.show();
+
+        // Start polling
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        pollingInterval = setInterval(async () => {
+            const result = await autoCheckPayment();
+            console.log("Auto check:", result);
+
+            if (result.paid) {
+                paymentStatus.textContent = "Payment Successful!";
+                clearInterval(pollingInterval);
+
+                setTimeout(() => {
+                    window.location.href = "{{ route('home') }}?payment=success";
+                }, 1500);
             }
+        }, 4000);
 
-            qrImg.src = data.qrUrl;
-            qrAmount.textContent = "Amount: $" + parseFloat(data.amount).toFixed(2);
-            paymentStatus.textContent = "Waiting for payment...";
+    });
 
-            // Show modal
-            const qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
-            qrModal.show();
+    /* Cancel */
+    cancelBtn.addEventListener('click', () => {
+        clearInterval(pollingInterval);
+        paymentStatus.textContent = "Payment cancelled.";
+    });
 
-            // Poll for payment confirmation every 5 seconds
-            if(pollingInterval) clearInterval(pollingInterval);
-            pollingInterval = setInterval(async () => {
-                const checkResp = await fetch("{{ route('checkout.checkPayment') }}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ md5: data.md5 || null }) // make sure backend returns md5
-                });
+    /* Manual confirm */
+    confirmBtn.addEventListener('click', async () => {
+        paymentStatus.textContent = "Checking...";
 
-                const result = await checkResp.json();
-                if(result.paid) {
-                    paymentStatus.textContent = "Payment Successful!";
-                    clearInterval(pollingInterval);
+        const result = await manualCheckPayment();
+        console.log("Manual check:", result);
 
-                    // Redirect to home page with a success message
-                    setTimeout(() => {
-                        window.location.href = "{{ route('home') }}?payment=success";
-                    }, 2000);
-                }
-            }, 4000);
+        if (result.paid) {
+            paymentStatus.textContent = "Payment Successful!";
+            clearInterval(pollingInterval);
 
-        } catch (err) {
-            console.error(err);
-            alert('Something went wrong. Try again.');
+            setTimeout(() => {
+                window.location.href = "{{ route('home') }}?payment=success";
+            }, 1500);
+
+        } else {
+            paymentStatus.textContent = "Payment still pending…";
         }
     });
+
 });
 </script>
 @endsection
