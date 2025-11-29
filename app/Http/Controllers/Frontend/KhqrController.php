@@ -12,7 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 class KhqrController extends Controller
 {
     public function generateQRCode(Request $request)
-    {
+{
+    try {
         $individualInfo = new IndividualInfo(
             bakongAccountID: 'sopheaktra_peng@aclb',
             merchantName: 'Peng Sopheaktra',
@@ -21,21 +22,40 @@ class KhqrController extends Controller
             amount: 500
         );
 
-        // $qrCodeUrl = BakongKHQR::generateIndividual($individualInfo);
-
         $response = BakongKHQR::generateIndividual($individualInfo);
 
         if ($response->status['code'] !== 0) {
-            $qrUrl = null;
-        } else {
-            $qrString = $response->data['qr'];
-            // Use QuickChart to render QR code
-            $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
+            return response()->json([
+                'success' => false,
+                'error' => $response->status['message'] ?? 'Failed to generate QR'
+            ]);
         }
 
-        // dd(123);
-        return view('qr', compact('qrUrl'));
+        $qrString = $response->data['qr'] ?? null;
+        if (!$qrString) {
+            return response()->json([
+                'success' => false,
+                'error' => 'QR string not found'
+            ]);
         }
+
+        $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
+
+        return response()->json([
+            'success' => true,
+            'qrUrl' => $qrUrl,
+            'amount' => 500,
+            'md5' => $response->data['md5'] ?? null // return MD5 for polling
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 
     public function checkTransactionByMD5(Request $request)
