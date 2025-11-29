@@ -12,7 +12,7 @@ use App\Http\Controllers\Frontend\Auth\LoginController;
 use App\Http\Controllers\Frontend\Auth\RegisterController;
 use App\Http\Controllers\Frontend\Auth\ForgotPasswordController;
 
-use App\Http\Controllers\Frontend\TestController;
+use App\Http\Controllers\TestController;
 
 use App\Http\Controllers\Frontend\KHqrController;
 
