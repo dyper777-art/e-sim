@@ -14,21 +14,19 @@ class TestResendController extends Controller
         $toName = 'Test User';
 
         $user = Auth::user();
-        //  Resend::emails()->send([
-        //         'from' => env('MAIL_FROM_ADDRESS'),
-        //         'to' => $user->email,
-        //         'subject' => '🎉 Payment Successful!',
-        //         'html' => "
-        //         <h1>Hello {123}</h1>
-        //         <p>Thank you for your purchase! ✅</p>
-        //         <p>Here are the details of your order:</p>
-        //         <pre>{123}</pre>
-        //         <p><strong>Total Paid:</strong> \${123}</p>
-        //         <p>We hope you enjoy your eSIMs! 🌐</p>
-        //     ",
-        //     ]);
-
-        dd($user->name);
+         Resend::emails()->send([
+                'from' => env('MAIL_FROM_ADDRESS'),
+                'to' => $user->email,
+                'subject' => '🎉 Payment Successful!',
+                'html' => "
+                <h1>Hello {123}</h1>
+                <p>Thank you for your purchase! ✅</p>
+                <p>Here are the details of your order:</p>
+                <pre>{123}</pre>
+                <p><strong>Total Paid:</strong> \${123}</p>
+                <p>We hope you enjoy your eSIMs! 🌐</p>
+            ",
+            ]);
 
         // try {
         //     Resend::emails()->send([
