@@ -14,6 +14,12 @@
                 </h2>
             </div>
 
+            {{-- @if(request('payment') === 'success')
+                <div class="alert alert-success text-center mt-3">
+                    Payment completed successfully!
+                </div>
+            @endif --}}
+
             <div class="filters-content">
                 <div class="row grid">
 
@@ -66,5 +72,32 @@
 
     <!-- end about section -->
 
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <h4 class="mb-3 text-success">Payment Completed!</h4>
+            <p class="mb-0">Your payment was successful. Thank you!</p>
+            <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
 
+
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('payment') === 'success') {
+        // Show modal
+        var successModal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
+        successModal.show();
+
+        // Remove query param without reloading
+        const url = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, url);
+    }
+});
+</script>
 @endsection

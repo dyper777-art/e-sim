@@ -58,6 +58,7 @@ class CartController extends Controller
 
         $totalAmount = $esimsGrouped->sum('total');
 
+
         return view('frontend.cart.index', compact('esimsGrouped', 'totalAmount'));
     }
 
@@ -171,4 +172,5 @@ class CartController extends Controller
 
         return back()->with('success', 'Item removed from cart.');
     }
+
 }

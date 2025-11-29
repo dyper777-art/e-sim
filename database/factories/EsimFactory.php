@@ -20,7 +20,7 @@ class EsimFactory extends Factory
         return [
             'esim_plan_id' => EsimPlan::factory(),
             'phone_number' => '0' . $this->faker->unique()->numerify('##########'),
-            'assigned_to'  => $this->faker->optional()->email(),
+            'assigned_to'  => null,
         ];
     }
 }

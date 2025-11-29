@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\PricingController;
+use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\EsimPlanController;
 use App\Http\Controllers\Frontend\Auth\LoginController;
 use App\Http\Controllers\Frontend\Auth\RegisterController;
 use App\Http\Controllers\Frontend\Auth\ForgotPasswordController;
@@ -64,5 +66,21 @@ Route::get('/auth/login', function() {
     return view('frontend.auth.login');
 })->name('auth.login');
 
+Route::get('/detail/{id}', [EsimPlanController::class, 'detail'])->name('detail');
+
 Route::get('/generate-qrcode', [KHqrController::class, 'generateQRCode'])->name('generate.qrcode');
 Route::get('/checkQRCode', [KHqrController::class, 'checkTransactionByMD5'])->name('check.qrcode');
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+Route::get('/checkout/generate-qr', [CheckoutController::class, 'generateQr'])->name('checkout.generateQr');
+Route::post('/checkout/confirm', [CheckoutController::class, 'confirmPayment'])->name('checkout.confirm');
+Route::post('/checkout/check-payment', [CheckoutController::class, 'checkPayment'])->name('checkout.checkPayment');
+
+use App\Http\Controllers\TestResendController;
+
+Route::get('/test-resend', [TestResendController::class, 'sendTestEmail']);
+
+use App\Http\Controllers\TelegramController;
+
+Route::get('/test-telegram', [TelegramController::class, 'sendTest']);

@@ -21,16 +21,29 @@ class KhqrController extends Controller
             amount: 500
         );
 
+        $qrCodeUrl = BakongKHQR::generateIndividual($individualInfo);
 
-        dd(BakongKHQR::generateIndividual($individualInfo));
-    }
+        dd($qrCodeUrl);
+
+        $response = \KHQR\BakongKHQR::generateIndividual($individualInfo);
+
+        if ($response->status['code'] !== 0) {
+            $qrUrl = null;
+        } else {
+            $qrString = $response->data['qr'];
+            // Use QuickChart to render QR code
+            $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
+        }
+
+        return view('qr', compact('qrUrl'));
+        }
 
     public function checkTransactionByMD5(Request $request)
     {
         // $md5 = $request->md5;
-        $bakongKHQR = new BakongKHQR('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiNDE2ZTY1NWQ0ZGM3NGUwMiJ9LCJpYXQiOjE3NjQxNTc0MzYsImV4cCI6MTc3MTkzMzQzNn0.Lf4tfukiWizxJqodxm976a-k_ZhxkoOZSWpgQ2d4AFE');
-        $respone = $bakongKHQR->checkTransactionByMD5('a40bddada4ccbfaee26f018ff0ba5196');
+        $bakongKHQR = new BakongKHQR('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiNDE2ZTY1NWQ0ZGM3NGUwMiJ9LCJpYXQiOjE3NjQ0MDg1MTEsImV4cCI6MTc3MjE4NDUxMX0.DSCa77FRMGSPenx0t6uiyBVPaxSp0Ms7yF4Dgt53Uro');
+        $respone = $bakongKHQR->checkTransactionByMD5('f9d57315dbae3fdc0e52eb70c46f15dd');
 
-        dd($respone);
+        dd($respone['responseMessage']);
     }
 }

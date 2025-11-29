@@ -24,7 +24,11 @@
                 <a class="nav-link" href="{{ route('about') }}">About</a>
               </li>
               <li class="nav-item {{ trim($__env->yieldContent('title')) == 'cart' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('cart.index') }}">Cart</a>
+                @if(Auth::check())
+                    <a class="nav-link" href="{{ route('cart.index') }}">Cart</a>
+                @else
+                    <a class="nav-link" href="{{ route('login') }}">Cart</a>
+                @endif
               </li>
 
             </ul>

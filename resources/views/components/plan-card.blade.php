@@ -5,10 +5,11 @@
 <div class="col-sm-6 col-lg-4 all {{ $plan['category_name'] }}">
     <div class="box">
         <div>
-            <div class="img-box">
-                <h1>{{ $plan['name'] }}</h1>
-                <img src="{{ asset('frontend/assets/images/esim-basic-standard.png') }}" alt="{{ $plan['name'] }}">
-            </div>
+            <a href="{{ route('detail', $plan->id) }}">
+                <div class="img-box">
+                    <img src="{{ asset( $plan->image ) }}" alt="{{ $plan->plan_name }}">
+                </div>
+            </a>
             <div class="detail-box {{ $detail == false ? 'not-detail-box' : '' }}">
                 <h5>{{ $plan['plan_name'] }}</h5>
                 <p>{{ $plan['description'] }}</p>

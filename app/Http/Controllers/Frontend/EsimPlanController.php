@@ -15,4 +15,13 @@ class EsimPlanController extends Controller
 
         return view('frontend.home.index', compact('plans'));
     }
+
+    public function detail($id)
+    {
+        // Fetch the specific eSIM plan by ID with its category and eSIMs
+        $esimPlan = EsimPlan::with(['category', 'esims'])->findOrFail($id);
+
+        // Pass it to the frontend detail page
+        return view('frontend.detail.index', compact('esimPlan'));
+    }
 }
