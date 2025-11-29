@@ -33,9 +33,10 @@ class KhqrController extends Controller
         //     $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
         // }
 
-        return view('frontend.home.index');
+        dd(123);
         return view('qr', compact('qrUrl'));
         }
+
 
     public function checkTransactionByMD5(Request $request)
     {

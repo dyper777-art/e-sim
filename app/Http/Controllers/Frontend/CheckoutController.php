@@ -142,6 +142,8 @@ class CheckoutController extends Controller
             'checkout_md5' => $md5
         ]);
 
+        
+
         return response()->json([
             'qrUrl' => $qrUrl,
             'amount' => $totalAmount,
