@@ -73,9 +73,11 @@ Route::get('/checkQRCode', [KHqrController::class, 'checkTransactionByMD5'])->na
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
-Route::get('/checkout/generate-qr', [CheckoutController::class, 'generateQr'])->name('checkout.generateQr');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/checkout/generate-qr', [CheckoutController::class, 'generateQr'])->name('checkout.generateQr');
+    Route::post('/checkout/check-payment', [CheckoutController::class, 'checkPayment'])->name('checkout.checkPayment');
+});
 Route::post('/checkout/confirm', [CheckoutController::class, 'confirmPayment'])->name('checkout.confirm');
-Route::post('/checkout/check-payment', [CheckoutController::class, 'checkPayment'])->name('checkout.checkPayment');
 
 use App\Http\Controllers\TestResendController;
 
