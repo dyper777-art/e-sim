@@ -124,9 +124,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Redirect to home page with a success message
                     setTimeout(() => {
                         window.location.href = "{{ route('home') }}?payment=success";
-                    }, 1000);
+                    }, 2000);
                 }
-            }, 3000);
+            }, 4000);
 
         } catch (err) {
             console.error(err);

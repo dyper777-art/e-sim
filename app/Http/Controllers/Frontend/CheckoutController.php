@@ -188,10 +188,8 @@ class CheckoutController extends Controller
             return response()->json(['paid' => false, 'error' => 'Missing transaction ID'], 400);
         }
 
-        // Initialize KHQR with your API key
         $bakongKHQR = new BakongKHQR(env('KHQR_API_KEY'));
 
-        // Check transaction using MD5
         $response = $bakongKHQR->checkTransactionByMD5($md5);
 
         if ($response['responseMessage'] != "Success") {
@@ -201,32 +199,51 @@ class CheckoutController extends Controller
         $user = Auth::user();
         $userId = $user->id;
 
-        // Mark cart items as completed and create checkout records
         $cartItems = Cart::where('user_id', $userId)
             ->where('status', 'pending')
+            ->with('esim.plan') // eager load for efficiency
             ->get();
 
+        if ($cartItems->isEmpty()) {
+            return response()->json(['paid' => false, 'error' => 'No pending items in cart.'], 400);
+        }
+
         $totalAmount = 0;
-        $planDetails = "";
+        $planDetails = '';
+        $testmessage = [];
 
-        $cartItems->each(function ($item) use (&$totalAmount, &$planDetails) {
-            $item->update(['status' => 'completed']);
+        // Group cart items by plan
+        $grouped = $cartItems->groupBy(fn($item) => $item->esim->plan->id);
 
-            Checkout::create([
-                'user_id'     => $item->user_id,
-                'esim_id'     => $item->esim_id,
-                'quantity'    => $item->quantity,
-                'total_price' => $item->total_price,
-            ]);
+        foreach ($grouped as $planId => $items) {
+            $plan = $items->first()->esim->plan;
+            $quantity = $items->sum('quantity');
+            $totalPrice = $items->sum('total_price');
+            $totalAmount += $totalPrice;
 
-            $totalAmount += $item->total_price;
+            // Collect all eSIM numbers
+            $numbers = $items->map(fn($i) => $i->esim->number)->join(', ');
 
-            $planDetails .= "📌 Plan ID: {$item->esim_id}, Quantity: {$item->quantity}, Price: \${$item->total_price}\n";
-        });
+            $planDetails .= "📌 Plan: {$plan->plan_name}\n";
+            $planDetails .= "   Quantity: {$quantity}\n";
+            $planDetails .= "   Price: \${$totalPrice}\n";
+            $planDetails .= "   eSIM Number(s): {$numbers}\n\n";
 
-        // Send email using Resend
+            // Mark items as completed and create checkout records
+            foreach ($items as $item) {
+                $item->update(['status' => 'completed']);
+
+                Checkout::create([
+                    'user_id' => $item->user_id,
+                    'esim_id' => $item->esim_id,
+                    'quantity' => $item->quantity,
+                    'total_price' => $item->total_price,
+                ]);
+            }
+        }
+
+        // Send email
         try {
-
             Resend::emails()->send([
                 'from' => env('MAIL_FROM_ADDRESS'),
                 'to' => $user->email,
@@ -240,6 +257,7 @@ class CheckoutController extends Controller
                 <p>We hope you enjoy your eSIMs! 🌐</p>
             ",
             ]);
+            $testmessage .= "mail working ";
         } catch (\Exception $e) {
             $testmessage = [
                 $user->name,
@@ -249,7 +267,7 @@ class CheckoutController extends Controller
             ];
         }
 
-        // Send Telegram notification with emoji and plan details
+        // Send Telegram notification
         try {
             $botToken = env('TELEGRAM_BOT_TOKEN');
             $chatId = env('TELEGRAM_CHAT_ID');
@@ -263,16 +281,15 @@ class CheckoutController extends Controller
             Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
                 'chat_id' => $chatId,
                 'text' => $message,
-                'parse_mode' => 'Markdown', // Allows bold/italics
+                'parse_mode' => 'Markdown',
             ]);
+            $testmessage .= 'telegram working ';
         } catch (\Exception $e) {
-            // Log Telegram failure
         }
 
         return response()->json([
             'paid' => true,
-            'message' => ['Payment confirmed, email sent, and Telegram notified.', $testmessage
-            ]
+            'message' => ['Payment confirmed, email sent, and Telegram notified.', $testmessage]
         ]);
     }
 }
