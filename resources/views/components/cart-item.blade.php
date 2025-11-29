@@ -4,7 +4,7 @@
     <div class="box d-flex align-items-center py-2 cart-section">
         <!-- Image -->
         <div class="img-box me-3">
-            <img src="{{ asset('frontend/assets/images/f1.png') }}" alt="">
+            <img src="{{ $plan->image }}" alt="">
         </div>
 
         <!-- Details -->

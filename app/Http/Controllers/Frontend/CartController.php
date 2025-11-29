@@ -27,40 +27,41 @@ class CartController extends Controller
     }
 
     public function index()
-    {
-        $cartItems = $this->cartItems;
+{
+    $cartItems = $this->cartItems;
 
-        // 2. Eager load eSIM with plan
-        $esims = Esim::whereIn('id', $cartItems->pluck('esim_id'))
-            ->with('plan')
-            ->get();
+    // 2. Eager load eSIM with plan
+    $esims = Esim::whereIn('id', $cartItems->pluck('esim_id'))
+        ->with('plan')
+        ->get();
 
-        // 3. Group by plan id
-        $esimsGrouped = $esims->groupBy('esim_plan_id')->map(function ($group, $planId) use ($cartItems) {
-            // Get related plan
-            $plan = $group->first()->plan;
+    // 3. Group by plan id
+    $esimsGrouped = $esims->groupBy('esim_plan_id')->map(function ($group, $planId) use ($cartItems) {
+        // Get related plan
+        $plan = $group->first()->plan;
 
-            // Count how many cart items correspond to this plan
-            $quantity = $cartItems->whereIn('esim_id', $group->pluck('id'))->sum('quantity');
+        // Count how many cart items correspond to this plan
+        $quantity = $cartItems->whereIn('esim_id', $group->pluck('id'))->sum('quantity');
 
-            // Calculate total price
-            $total = $cartItems->whereIn('esim_id', $group->pluck('id'))->sum('total_price');
+        // Calculate total price
+        $total = $cartItems->whereIn('esim_id', $group->pluck('id'))->sum('total_price');
 
-            return (object)[
-                'plan_id' => $plan->id,
-                'plan_name' => $plan->plan_name,
-                'price' => $plan->price,
-                'quantity' => $quantity,
-                'total' => $total,
-                'cart_ids' => $cartItems->whereIn('esim_id', $group->pluck('id'))->pluck('id')->toArray(),
-            ];
-        })->values();
+        return (object)[
+            'plan_id' => $plan->id,
+            'plan_name' => $plan->plan_name,
+            'price' => $plan->price,
+            'quantity' => $quantity,
+            'total' => $total,
+            'image' => $plan->image, // ✅ Add the image here
+            'cart_ids' => $cartItems->whereIn('esim_id', $group->pluck('id'))->pluck('id')->toArray(),
+        ];
+    })->values();
 
-        $totalAmount = $esimsGrouped->sum('total');
+    $totalAmount = $esimsGrouped->sum('total');
 
+    return view('frontend.cart.index', compact('esimsGrouped', 'totalAmount'));
+}
 
-        return view('frontend.cart.index', compact('esimsGrouped', 'totalAmount'));
-    }
 
 
     // Add an EsimPlan to cart
