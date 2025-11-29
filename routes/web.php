@@ -12,6 +12,8 @@ use App\Http\Controllers\Frontend\Auth\LoginController;
 use App\Http\Controllers\Frontend\Auth\RegisterController;
 use App\Http\Controllers\Frontend\Auth\ForgotPasswordController;
 
+use App\Http\Controllers\Frontend\TestController;
+
 use App\Http\Controllers\Frontend\KHqrController;
 
 /*
@@ -86,3 +88,5 @@ Route::get('/test-resend', [TestResendController::class, 'sendTestEmail']);
 use App\Http\Controllers\TelegramController;
 
 Route::get('/test-telegram', [TelegramController::class, 'sendTest']);
+
+Route::get('/test', [TestController::class, 'test']);
