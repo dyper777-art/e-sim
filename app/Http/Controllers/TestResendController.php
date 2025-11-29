@@ -3,45 +3,40 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Resend\Laravel\Facades\Resend; // for resend/resend-laravel
+// use Resend\Laravel\Facades\Resend; // for resend/resend-laravel
 use Illuminate\Support\Facades\Auth;
+
+use Resend\Resend;
 
 class TestResendController extends Controller
 {
     public function sendTestEmail()
     {
-        $toEmail = 'dyper777@gmail.com'; // Replace with the email you want to test
-        $toName = 'Test User';
+    try {
+    $resend = new Resend('re_Px1ZvZ8b_N97WP4XZ3kSsE4dyPmWApQ1p'); // or pass API key directly
+    $resend->emails()->send([
+        'from' => 'mail@gifshop.msk.solutions',
+        'to' => 'user->email',
+        'subject' => '🎉 Payment Successful!',
+        'html' => "
+            <h1>Hello {'user->name'}</h1>
+            <p>Thank you for your purchase! ✅</p>
+            <p>Here are the details of your order:</p>
+            <pre>{planDetails}</pre>
+            <p><strong>Total Paid:</strong> \${totalAmount}</p>
+            <p>We hope you enjoy your eSIMs! 🌐</p>
+        ",
+    ]);
 
-        $user = Auth::user();
-         Resend::emails()->send([
-                'from' => env('MAIL_FROM_ADDRESS'),
-                'to' => $user->email,
-                'subject' => '🎉 Payment Successful!',
-                'html' => "
-                <h1>Hello {123}</h1>
-                <p>Thank you for your purchase! ✅</p>
-                <p>Here are the details of your order:</p>
-                <pre>{123}</pre>
-                <p><strong>Total Paid:</strong> \${123}</p>
-                <p>We hope you enjoy your eSIMs! 🌐</p>
-            ",
-            ]);
+    $testmessage = "mail working ";
 
-        // try {
-        //     Resend::emails()->send([
-        //         'from' => env('MAIL_FROM_ADDRESS'),
-        //         'to' => $toEmail,
-        //         'subject' => 'Test Email from Resend',
-        //         'html' => "
-        //             <h1>Hello {$toName}</h1>
-        //             <p>This is a test email sent using Resend and Laravel!</p>
-        //         ",
-        //     ]);
-
-        //     return response()->json(['success' => true, 'message' => 'Test email sent!']);
-        // } catch (\Exception $e) {
-        //     return response()->json(['success' => false, 'message' => $e->getMessage()]);
-        // }
+} catch (\Exception $e) {
+    $testmessage = [
+        'error' => $e->getMessage(),
+        'user' => '123',
+        'planDetails' => ',',
+        'totalAmount' => 'uuy'
+    ];
+}
     }
 }

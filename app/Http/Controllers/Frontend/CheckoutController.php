@@ -188,7 +188,7 @@ class CheckoutController extends Controller
             return response()->json(['paid' => false, 'error' => 'Missing transaction ID'], 400);
         }
 
-        $bakongKHQR = new BakongKHQR(env('KHQR_API_KEY'));
+        $bakongKHQR = new BakongKHQR('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiNDE2ZTY1NWQ0ZGM3NGUwMiJ9LCJpYXQiOjE3NjQ0MDg1MTEsImV4cCI6MTc3MjE4NDUxMX0.DSCa77FRMGSPenx0t6uiyBVPaxSp0Ms7yF4Dgt53Uro');
 
         $response = $bakongKHQR->checkTransactionByMD5($md5);
 
@@ -245,7 +245,7 @@ class CheckoutController extends Controller
         // Send email
         try {
             Resend::emails()->send([
-                'from' => env('MAIL_FROM_ADDRESS'),
+                'from' => 'mail@gifshop.msk.solutions',
                 'to' => $user->email,
                 'subject' => '🎉 Payment Successful!',
                 'html' => "
@@ -269,8 +269,8 @@ class CheckoutController extends Controller
 
         // Send Telegram notification
         try {
-            $botToken = env('TELEGRAM_BOT_TOKEN');
-            $chatId = env('TELEGRAM_CHAT_ID');
+            $botToken = '8201599995:AAEluPEzqH3m8ygQ9HTXiwHnv4GyjRosHRk';
+            $chatId = '1694517385';
 
             $message = "🎉 *New Payment Received!*\n\n";
             $message .= "👤 *User:* {$user->name} ({$user->email})\n";
