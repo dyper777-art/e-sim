@@ -9,7 +9,7 @@ use KHQR\Models\IndividualInfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class KhqrController extends Controller
+class KHqrController extends Controller
 {
     public function generateQRCode(Request $request)
     {

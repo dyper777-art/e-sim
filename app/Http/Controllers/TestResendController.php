@@ -12,7 +12,7 @@ class TestResendController extends Controller
 {
     public function sendTestEmail()
     {
-    try {
+        try {
     $resend = new Resend('re_Px1ZvZ8b_N97WP4XZ3kSsE4dyPmWApQ1p'); // or pass API key directly
     $resend->emails()->send([
         'from' => 'mail@gifshop.msk.solutions',
