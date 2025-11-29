@@ -13,27 +13,27 @@ class KhqrController extends Controller
 {
     public function generateQRCode(Request $request)
     {
-        // $individualInfo = new IndividualInfo(
-        //     bakongAccountID: 'sopheaktra_peng@aclb',
-        //     merchantName: 'Peng Sopheaktra',
-        //     merchantCity: 'PHNOM PENH',
-        //     currency: KHQRData::CURRENCY_KHR,
-        //     amount: 500
-        // );
+        $individualInfo = new IndividualInfo(
+            bakongAccountID: 'sopheaktra_peng@aclb',
+            merchantName: 'Peng Sopheaktra',
+            merchantCity: 'PHNOM PENH',
+            currency: KHQRData::CURRENCY_KHR,
+            amount: 500
+        );
 
         // $qrCodeUrl = BakongKHQR::generateIndividual($individualInfo);
 
-        // $response = BakongKHQR::generateIndividual($individualInfo);
+        $response = BakongKHQR::generateIndividual($individualInfo);
 
-        // if ($response->status['code'] !== 0) {
-        //     $qrUrl = null;
-        // } else {
-        //     $qrString = $response->data['qr'];
-        //     // Use QuickChart to render QR code
-        //     $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
-        // }
+        if ($response->status['code'] !== 0) {
+            $qrUrl = null;
+        } else {
+            $qrString = $response->data['qr'];
+            // Use QuickChart to render QR code
+            $qrUrl = 'https://quickchart.io/qr?text=' . urlencode($qrString) . '&size=250';
+        }
 
-        dd(123);
+        // dd(123);
         return view('qr', compact('qrUrl'));
         }
 
